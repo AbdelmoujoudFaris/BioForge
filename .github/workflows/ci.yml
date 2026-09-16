@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install ruff
+      - run: ruff check src tests engines/pharmaforge_core/pharmaforge_core
+      - run: ruff format --check src tests engines/pharmaforge_core/pharmaforge_core
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: "pip" }
+      - name: Install engine + package
+        run: |
+          pip install -e ./engines/pharmaforge_core
+          pip install -e ".[dev,scale,tracking]"
+      - name: Unit tests (no network required)
+        run: pytest tests/unit -q -m "not integration" --cov=src/bioforge --cov-report=xml --cov-report=term-missing
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with: { name: coverage-xml, path: coverage.xml }
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    # Real network calls against RCSB/PubChem/STRING/OmniPath/KEGG/PubMed;
+    # allowed to fail without blocking merges (flaky upstream services are
+    # not this repo's fault) but still surfaced in the checks tab.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: "pip" }
+      - run: |
+          pip install -e ./engines/pharmaforge_core
+          pip install -e ".[dev,scale,tracking]"
+      - run: pytest tests/integration -q -m integration
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build service image
+        uses: docker/build-push-action@v5
+        with: { context: ., push: false, tags: bioforge/bioforge:ci }
+      - name: Build dashboard image
+        uses: docker/build-push-action@v5
+        with: { context: ., file: frontend/streamlit_app/Dockerfile, push: false, tags: bioforge/dashboard:ci }

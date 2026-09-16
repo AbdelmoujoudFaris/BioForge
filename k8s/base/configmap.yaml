@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bioforge-config
+  namespace: bioforge
+data:
+  BIOFORGE_GATEWAY_URL: "http://gateway:8000"
+  BIOFORGE_STRUCTURE_SERVICE_URL: "http://structure:8001"
+  BIOFORGE_GENERATE_SERVICE_URL: "http://generate:8002"
+  BIOFORGE_REFINE_SERVICE_URL: "http://refine:8003"
+  BIOFORGE_RETRIEVAL_SERVICE_URL: "http://retrieval:8004"
+  BIOFORGE_ADMET_SERVICE_URL: "http://admet:8005"
+  BIOFORGE_MECHANISM_SERVICE_URL: "http://mechanism:8006"
+  BIOFORGE_REPORT_SERVICE_URL: "http://report:8007"
+  BIOFORGE_ORCHESTRATOR_SERVICE_URL: "http://orchestrator:8008"
+  BIOFORGE_REDIS_URL: "redis://redis:6379/0"
+  BIOFORGE_CELERY_BROKER_URL: "redis://redis:6379/0"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bioforge-secrets
+  namespace: bioforge
+type: Opaque
+stringData:
+  BIOFORGE_LLM_API_KEY: ""
+  BIOFORGE_DRUGBANK_API_KEY: ""

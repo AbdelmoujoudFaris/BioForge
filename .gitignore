@@ -1,0 +1,48 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# data / model artifacts
+data_cache/
+!engines/pharmaforge_core/data_cache/
+checkpoints/*
+!checkpoints/.gitkeep
+!engines/pharmaforge_core/checkpoints/.gitkeep
+mlruns/
+mlartifacts/
+*.pt
+*.ckpt
+
+# secrets
+.env
+*.env.local
+
+# docs build
+docs/_build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# notebooks
+.ipynb_checkpoints/
+
+# k8s local
+k8s/**/secrets.yaml

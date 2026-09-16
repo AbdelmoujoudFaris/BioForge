@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bioforge"
+version = "0.1.0"
+description = "Open-source, AI-native drug repurposing and de novo design platform: modular microservices, causal mechanistic interpretability, and systems pharmacology."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "BioForge contributors" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # web / services
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+    # orchestration
+    "langgraph>=0.2",
+    # science stack shared with engines/pharmaforge_core
+    "numpy>=1.24",
+    "networkx>=3.1",
+    "pandas>=2.0",
+    "rdkit>=2023.9",
+    "biopython>=1.81",
+    "scikit-learn>=1.3",
+    "requests>=2.31",
+    # provenance
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+scale = ["celery>=5.4", "redis>=5.0"]
+tracking = ["mlflow>=2.12"]
+physics = ["openmm>=8.1"]
+frontend = ["streamlit>=1.32", "plotly>=5.18"]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "black>=24.0",
+    "mypy>=1.9",
+    "pre-commit>=3.7",
+]
+docs = ["sphinx>=7.2", "myst-parser>=2.0", "sphinx-rtd-theme>=2.0", "sphinx-autodoc-typehints>=2.0"]
+
+[project.urls]
+Homepage = "https://github.com/bioforge-oss/bioforge"
+Documentation = "https://github.com/bioforge-oss/bioforge/tree/main/docs"
+
+[project.scripts]
+bioforge = "bioforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["bioforge*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "engines/pharmaforge_core"]
+markers = [
+    "integration: end-to-end pipeline tests (slower, no network/GPU required)",
+]
+
+[tool.coverage.run]
+source = ["src/bioforge"]
+omit = ["*/services/*/main.py"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true

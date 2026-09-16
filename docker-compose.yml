@@ -1,0 +1,72 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  gateway:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: gateway, PORT: "8000" }
+    ports: ["8000:8000"]
+    depends_on: [structure, generate, refine, retrieval, admet, mechanism, report, orchestrator]
+
+  structure:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: structure, PORT: "8001" }
+    ports: ["8001:8001"]
+    volumes: ["data_cache:/app/engines/pharmaforge_core/data_cache"]
+
+  generate:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: generate, PORT: "8002" }
+    ports: ["8002:8002"]
+    volumes: ["checkpoints:/app/checkpoints"]
+    # deploy.resources.reservations.devices is the Compose GPU-scheduling hook for a
+    # real trained checkpoint; uncomment once one is available -
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+
+  refine:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: refine, PORT: "8003" }
+    ports: ["8003:8003"]
+
+  retrieval:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: retrieval, PORT: "8004" }
+    ports: ["8004:8004"]
+
+  admet:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: admet, PORT: "8005" }
+    ports: ["8005:8005"]
+
+  mechanism:
+    build: { context: ., dockerfile: Dockerfile }
+    environment:
+      SERVICE: mechanism
+      PORT: "8006"
+      # BIOFORGE_LLM_PROVIDER: anthropic
+      # BIOFORGE_LLM_API_KEY: ${ANTHROPIC_API_KEY:-}
+    ports: ["8006:8006"]
+
+  report:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: report, PORT: "8007" }
+    ports: ["8007:8007"]
+
+  orchestrator:
+    build: { context: ., dockerfile: Dockerfile }
+    environment: { SERVICE: orchestrator, PORT: "8008" }
+    ports: ["8008:8008"]
+    depends_on: [redis]
+
+  dashboard:
+    build: { context: ., dockerfile: frontend/streamlit_app/Dockerfile }
+    ports: ["8501:8501"]
+    depends_on: [gateway]
+
+volumes:
+  data_cache:
+  checkpoints:
